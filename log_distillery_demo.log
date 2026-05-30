@@ -1,0 +1,98 @@
+================================================================================
+  LOG DISTILLERY OPERATIONS LOG
+  EST. Wouldn't You Like To Know?
+  Batch #4,871 — Small Batch, Big Problems
+================================================================================
+
+2024-03-14 06:00:01 INFO  [startup] Distillery operations commencing. Sun is barely up. Coffee not ready.
+2024-03-14 06:00:02 INFO  [startup] Checking barrel inventory... 847 barrels accounted for. Gerald says there were 848 yesterday.
+2024-03-14 06:00:03 WARN  [barrel:B-448] Barrel B-448 smells "different." Dave says it's fine. Dave said the same thing about the 2019 batch.
+2024-03-14 06:00:04 INFO  [still:COPPER-1] Still COPPER-1 warming up. She's making that noise again.
+2024-03-14 06:00:05 DEBUG [still:COPPER-1] Temperature: 72°F. Target: 173°F. Still not there. Like most of us before 9am.
+2024-03-14 06:00:09 INFO  [staff] Gerald clocked in. Gerald is always on time. We do not deserve Gerald.
+2024-03-14 06:00:15 INFO  [staff] Dave clocked in. Dave smells like he already sampled something.
+2024-03-14 06:00:22 WARN  [inventory] Corn mash delivery delayed 45 minutes. Supplier says "traffic." It's a Tuesday.
+2024-03-14 06:01:00 INFO  [still:COPPER-1] Temperature: 94°F. Progress.
+2024-03-14 06:01:03 DEBUG [coil] Condensing coil pressure nominal. She's a good coil. Best coil we've had.
+2024-03-14 06:01:15 INFO  [staff] New intern Bryce arrived. Bryce brought oat milk. This was not well received.
+2024-03-14 06:01:16 WARN  [staff:bryce] Bryce asked what a "still" is. Logging for posterity.
+2024-03-14 06:01:45 INFO  [mash:vat-3] Mash Vat 3 pre-heating initiated. Smells tremendous. Or terrible. Depends who you ask.
+2024-03-14 06:02:00 DEBUG [sensor:temp-03] Vat 3 temperature: 88°F. Target: 155°F. Patience, Bryce.
+2024-03-14 06:02:14 ERROR [barrel:B-112] Barrel B-112 bung seal failure. Whiskey leaking at approximately 0.3 oz/min.
+2024-03-14 06:02:15 INFO  [staff:gerald] Gerald already on it. Gerald was probably already watching B-112 suspiciously.
+2024-03-14 06:02:18 INFO  [barrel:B-112] Bung reseated. Crisis averted. Gerald nodded once and said nothing.
+2024-03-14 06:02:30 WARN  [barrel:B-112] Dave is licking his finger near barrel B-112. Investigating.
+2024-03-14 06:02:31 INFO  [staff:dave] Dave confirmed. Dave says it "tastes ready." Dave is not a licensed taster.
+2024-03-14 06:03:00 INFO  [still:COPPER-1] Temperature: 140°F. Getting there.
+2024-03-14 06:03:01 DEBUG [still:COPPER-1] Pressure: 12 PSI. Nominal.
+2024-03-14 06:03:15 INFO  [mash:vat-3] Corn mash delivery arrived. Driver apologized. Nobody asked.
+2024-03-14 06:03:22 INFO  [mash:vat-3] Mash loading initiated. 800 lbs corn. 200 lbs rye. 1 mystery grain Dave swears "adds character."
+2024-03-14 06:03:23 WARN  [mash:vat-3] Mystery grain not documented in recipe. Flagging for quality review.
+2024-03-14 06:03:24 INFO  [staff:dave] Dave says the mystery grain is "basically barley." Quality review inconclusive.
+2024-03-14 06:04:00 INFO  [fermentation:tank-7] Yeast pitched in Tank 7. She's alive. She's hungry.
+2024-03-14 06:04:12 DEBUG [fermentation:tank-7] Fermentation activity: none yet. Give her a minute. She just woke up.
+2024-03-14 06:04:45 INFO  [still:COPPER-1] Temperature: 165°F. Almost there.
+2024-03-14 06:04:50 WARN  [cat] Distillery cat "Mash" has entered the barrel room again. Third time this week.
+2024-03-14 06:04:51 DEBUG [cat] Mash appears to be sleeping on Barrel B-291. B-291 is an 8-year bourbon. Good taste, Mash.
+2024-03-14 06:05:00 INFO  [still:COPPER-1] Temperature: 173°F. Distillation commencing.
+2024-03-14 06:05:01 INFO  [coil] First drops appearing at coil output. Beautiful. Someone get a glass.
+2024-03-14 06:05:02 DEBUG [output:proof] New make spirit proof: 140. Fiery. Like Dave before his coffee.
+2024-03-14 06:05:15 INFO  [visitor] Tour group arriving at 6am. Who scheduled this. Who did this.
+2024-03-14 06:05:16 WARN  [visitor] Tour group is 34 people. Booking said 12. Classic.
+2024-03-14 06:05:20 INFO  [staff:bryce] Bryce assigned as tour guide. Bryce does not know enough to be tour guide.
+2024-03-14 06:05:21 WARN  [staff:bryce] Bryce asked tour group if anyone wants an oat milk latte. Two people said yes.
+2024-03-14 06:05:45 ERROR [visitor:group-a] Visitor attempted to open Barrel B-7. B-7 is a 12-year single barrel reserve. Do not open B-7.
+2024-03-14 06:05:46 INFO  [staff:gerald] Gerald materialized from nowhere and stopped the visitor. Gerald has a gift.
+2024-03-14 06:06:00 DEBUG [fermentation:tank-7] Fermentation activity: bubbling detected. She's working. She's doing great.
+2024-03-14 06:06:12 INFO  [still:COPPER-2] COPPER-2 pre-heat initiated for second run. Backup still. Reliable. No personality.
+2024-03-14 06:06:30 WARN  [still:COPPER-1] COPPER-1 is making that noise again. Different noise this time. New noise.
+2024-03-14 06:06:31 DEBUG [still:COPPER-1] Investigating new noise. Gerald says it's fine. Choosing to believe Gerald.
+2024-03-14 06:07:00 INFO  [aging:warehouse-b] Warehouse B temperature check: 58°F. Angels' share: approximately 2% annually. The angels have good taste.
+2024-03-14 06:07:14 INFO  [barrel:B-554] Barrel B-554 scheduled for dumping today. 9 years old. She had a good run.
+2024-03-14 06:07:15 DEBUG [barrel:B-554] Tasting notes from Gerald: "oak, vanilla, caramel, something I can't explain but it's correct."
+2024-03-14 06:07:16 DEBUG [barrel:B-554] Tasting notes from Dave: "real good."
+2024-03-14 06:07:45 WARN  [cat] Mash has knocked over a bung mallet. Casualty: one bung mallet, zero barrels. Net outcome: acceptable.
+2024-03-14 06:08:00 INFO  [bottling:line-1] Bottling Line 1 spinning up. Today's run: 1,200 bottles of 8-year small batch.
+2024-03-14 06:08:03 DEBUG [bottling:line-1] Label alignment: nominal. Last week it was off by 2mm. We don't talk about last week.
+2024-03-14 06:08:15 ERROR [bottling:line-1] Bottle jam detected at station 4. Exactly where it always jams. We know this. We accept this.
+2024-03-14 06:08:16 INFO  [staff:gerald] Gerald unjammed station 4. Gerald did not look surprised. Gerald is never surprised.
+2024-03-14 06:08:30 INFO  [bottling:line-1] Line running. Bottles filling. All is right with the world.
+2024-03-14 06:09:00 DEBUG [output:proof] Post-dilution proof check: 90.0. Perfect. As it should be. As it always should be.
+2024-03-14 06:09:15 WARN  [visitor:group-a] Visitor asked Bryce how long whiskey has been made here. Bryce said "a while."
+2024-03-14 06:09:16 INFO  [visitor:group-a] Gerald intervened. Gerald gave a 4-minute perfectly accurate history of this distillery. No notes.
+2024-03-14 06:09:45 INFO  [fermentation:tank-7] Fermentation proceeding beautifully. Brix dropping as expected. She knows what she's doing.
+2024-03-14 06:10:00 INFO  [mash:vat-3] Mash Vat 3 now at 155°F. Cooking underway. Smells like promise.
+2024-03-14 06:10:12 WARN  [inventory:grain] Rye inventory at 18%. Recommend reorder before Thursday or Dave will suggest the mystery grain again.
+2024-03-14 06:10:30 INFO  [barrel:new] 6 new charred oak barrels received from cooperage. They're empty and full of potential.
+2024-03-14 06:10:31 DEBUG [barrel:new] Char level: #3. Nice. Classic. Dependable.
+2024-03-14 06:10:45 ERROR [still:COPPER-1] New noise has escalated. It's now a sound. Gerald is frowning. This is unprecedented.
+2024-03-14 06:10:46 WARN  [still:COPPER-1] Reducing throughput 15% as precaution. Logging Gerald's frown as an official event.
+2024-03-14 06:10:50 INFO  [maintenance] Calling maintenance. Maintenance is Steve. Steve's phone goes to voicemail. Of course.
+2024-03-14 06:11:00 INFO  [still:COPPER-1] Sound has stopped. We don't know why. Gerald's frown has softened to mild concern.
+2024-03-14 06:11:01 DEBUG [still:COPPER-1] Throughput restored to 100%. Choosing optimism.
+2024-03-14 06:11:15 INFO  [visitor:group-a] Tour group departing. 31 of 34 purchased bottles. 2 bought hats. 1 (Bryce's oat milk people) bought a mug.
+2024-03-14 06:11:45 WARN  [cat] Mash has disappeared. Last seen near the grain storage. Not alarmed. This is normal behavior for Mash.
+2024-03-14 06:12:00 INFO  [bottling:line-1] Bottling run 34% complete. 408 bottles done. Quality control tasting at bottle #100: excellent.
+2024-03-14 06:12:01 DEBUG [qc:tasting] Quality control taster (Gerald) note: "This is the one."
+2024-03-14 06:12:02 DEBUG [qc:tasting] Gerald says that every time. Gerald has been right every time.
+2024-03-14 06:12:30 INFO  [aging:warehouse-a] Barrel rotation in Warehouse A complete. 112 barrels moved. No injuries. Gerald supervised.
+2024-03-14 06:13:00 ERROR [payroll] Payroll system reminder: Dave's timesheet unsigned for 3rd consecutive week.
+2024-03-14 06:13:01 WARN  [staff:dave] Dave says he'll get to it. Dave said that last week. And the week before.
+2024-03-14 06:13:15 INFO  [still:COPPER-1] Distillation run 1 complete. Yield: 47 gallons new make spirit. Right on target.
+2024-03-14 06:13:20 INFO  [still:COPPER-1] Run 2 loading. More mash. More promise. This is the job.
+2024-03-14 06:14:00 DEBUG [water:branch-creek] Branch Creek water pH: 7.2. Iron: <0.1 ppm. As pure as Gerald's dedication.
+2024-03-14 06:14:22 WARN  [staff:bryce] Bryce has been found sitting on an empty barrel playing a video game. Redirecting Bryce to labeling duties.
+2024-03-14 06:14:23 INFO  [staff:bryce] Bryce says labeling is "actually kind of zen." Progress.
+2024-03-14 06:15:00 INFO  [fermentation:tank-7] Gravity reading: 1.048. Down from 1.072. She's working hard. We appreciate her.
+2024-03-14 06:15:30 INFO  [cat] Mash has reappeared near the coil output. Mash is watching the spirit drip. Mash understands the process.
+2024-03-14 06:16:00 INFO  [aging:warehouse-c] New fill into Barrel B-855. Today's date inscribed. In 8 years someone will be very happy about this moment.
+2024-03-14 06:16:01 DEBUG [barrel:B-855] Contents: new make spirit, 140 proof. Projected release: 2032. See you then, B-855.
+2024-03-14 06:16:45 WARN  [humidity] Warehouse B humidity at 62%. Slightly high. Monitoring. The wood is thirsty.
+2024-03-14 06:17:00 INFO  [shift:morning] Morning shift summary: 47 gal distilled, 408 bottles filled, 0 injuries, 1 Gerald frown event, 1 Bryce oat milk incident.
+2024-03-14 06:17:01 INFO  [shift:morning] Overall morning assessment: good. Gerald nodded. That's the highest rating we have.
+2024-03-14 06:17:15 DEBUG [still:COPPER-1] She's still making that noise. We've named it. We call it "Tuesday."
+2024-03-14 06:17:30 WARN  [staff:dave] Dave is eating lunch at 6:17am. Dave operates on his own timeline.
+2024-03-14 06:18:00 INFO  [distillery] All systems nominal. Whiskey aging. Yeast fermenting. Gerald vigilant. Mash napping.
+2024-03-14 06:18:01 INFO  [distillery] Another day at Log Distillery. EST. Wouldn't You Like To Know?
+2024-03-14 06:18:02 INFO  [distillery] End of morning operations log. The work continues. It always continues.
+================================================================================
