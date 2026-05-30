@@ -109,9 +109,9 @@ body::after {
 
 
 /* ── CONFIG FIELDS ────────────────────────────────── */
-.config-bar { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 20px; }
-.config-field { display: flex; flex-direction: column; gap: 5px; }
-.config-field label { font-family: 'Special Elite', serif; font-size: 10px; color: var(--ink4); letter-spacing: .15em; text-transform: uppercase; }
+.config-bar { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; justify-content: center; margin-bottom: 16px; }
+.config-field { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.config-field label { font-family: 'Special Elite', serif; font-size: 10px; color: var(--ink4); letter-spacing: .15em; text-transform: uppercase; text-align: center; }
 .config-field input,
 .config-field select {
   background: var(--oak2);
@@ -132,6 +132,40 @@ body::after {
 .config-field input[type=password],
 .config-field input[type=text]   { width: 270px; }
 .config-field input[type=password] { letter-spacing: .1em; }
+
+/* Config save / forget row */
+.cfg-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.cfg-save-btn, .cfg-clear-btn {
+  background: transparent;
+  border-radius: var(--r);
+  font-family: 'Special Elite', serif;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 7px 18px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.cfg-save-btn  { border: 1px solid var(--copper2); color: var(--copper2); }
+.cfg-save-btn:hover  { background: var(--copper2); color: var(--oak); }
+.cfg-clear-btn { border: 1px solid var(--grain); color: var(--ink4); }
+.cfg-clear-btn:hover { border-color: #9b4040; color: #9b4040; }
+.cfg-saved-note {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--copper2);
+  opacity: 0;
+  transition: opacity .4s;
+}
+.cfg-saved-note.show { opacity: 1; }
 
 
 /* N8N URL input wider */
@@ -489,6 +523,13 @@ body::after {
           <input type="number" id="batchSize" value="6" min="2" max="20">
         </div>
 
+      </div>
+
+      <!-- CONFIG ACTIONS -->
+      <div class="cfg-actions">
+        <button class="cfg-save-btn" id="cfgSaveBtn" onclick="saveConfig()">Save Config</button>
+        <button class="cfg-clear-btn" onclick="clearConfig()">Forget</button>
+        <span class="cfg-saved-note" id="cfgSavedNote">Config saved.</span>
       </div>
 
       <!-- DROP ZONE -->
@@ -854,8 +895,6 @@ async function runDistill() {
   const chunkSize = Math.max(5, parseInt(document.getElementById('chunkSize').value) || 30);
   const batchSize = Math.max(2, parseInt(document.getElementById('batchSize').value) || 6);
 
-  // Build mode config — prefer window._distilleryEnv (set by .env loader)
-  // over live input values, which the browser password manager may have wiped
   const _env = window._distilleryEnv || {};
   let cfg;
   const webhookUrl = _env.N8N_WEBHOOK_URL || document.getElementById('n8nUrl').value.trim();
@@ -1047,70 +1086,76 @@ async function generateAftercares(cfg, finalSummary) {
   }
 }
 
-// ── .env auto-loader ─────────────────────────────────────────────────────────
-// Tries 'distillery.env' then '.env'. Uses XHR fallback for file:// contexts.
-// Parsed values live in window._distilleryEnv so runDistill reads from there
-// directly — avoids any browser password-manager wipe on inputs after load.
-(async function loadDotEnv() {
-  const candidates = ['distillery.env', '.env'];
+// ── Secure config (AES-GCM via Web Crypto) ───────────────────────────────────
+const CFG_KEY = 'distilleryCfg_v1';
 
-  function xhrGet(url) {
-    return new Promise((resolve) => {
-      const x = new XMLHttpRequest();
-      x.open('GET', url, true);
-      x.onload  = () => (x.status === 200 ? resolve(x.responseText) : resolve(null));
-      x.onerror = () => resolve(null);
-      x.send();
-    });
-  }
-
-  let text = null;
-  for (const name of candidates) {
-    try {
-      const res = await fetch(name);
-      if (res.ok) { text = await res.text(); break; }
-    } catch { /* fetch blocked on file:// — fall through to XHR */ }
-    if (text === null) {
-      const t = await xhrGet(name);
-      if (t !== null) { text = t; break; }
-    }
-  }
-  if (!text) return;   // no config file found — show config bar normally
-
-  const env = {};
-  for (const raw of text.split('\n')) {
-    const line = raw.trim();
-    if (!line || line.startsWith('#')) continue;
-    const eq = line.indexOf('=');
-    if (eq < 1) continue;
-    const k = line.slice(0, eq).trim();
-    const v = line.slice(eq + 1).trim().replace(/^["']|["']$/g, '');
-    env[k] = v;
-  }
-
-  // Store for runDistill — more reliable than reading back from inputs
-  window._distilleryEnv = env;
-
-  let populated = false;
-
-  if (env.N8N_WEBHOOK_URL) {
-    document.getElementById('n8nUrl').value = env.N8N_WEBHOOK_URL;
-    populated = true;
-  }
-  if (env.N8N_AUTH) {
-    document.getElementById('n8nAuth').value = env.N8N_AUTH;
-  }
-  if (env.CHUNK_SIZE) {
-    document.getElementById('chunkSize').value = env.CHUNK_SIZE;
-  }
-  if (env.BATCH_SIZE) {
-    document.getElementById('batchSize').value = env.BATCH_SIZE;
-  }
-
-  if (populated) {
-    const bar = document.querySelector('.config-bar');
-    if (bar) bar.style.display = 'none';
-  }
+async function getCryptoKey() {
+  const fingerprint = [navigator.userAgent, screen.width, screen.height,
+                       Intl.DateTimeFormat().resolvedOptions().timeZone].join('|');
+  const enc = new TextEncoder();
+  const raw = await crypto.subtle.importKey('raw', enc.encode(fingerprint),
+                { name: 'PBKDF2' }, false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: enc.encode('distillery-salt-v1'),
+      iterations: 100_000, hash: 'SHA-256' },
+    raw, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function encryptObj(obj) {
+  const key = await getCryptoKey();
+  const iv  = crypto.getRandomValues(new Uint8Array(12));
+  const ct  = await crypto.subtle.encrypt({ name: 'AES-GCM', iv },
+                key, new TextEncoder().encode(JSON.stringify(obj)));
+  const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  return b64(iv) + ':' + b64(ct);
+}
+async function decryptObj(stored) {
+  try {
+    const key = await getCryptoKey();
+    const [ivB64, ctB64] = stored.split(':');
+    const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+    const pt   = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: b64d(ivB64) }, key, b64d(ctB64));
+    return JSON.parse(new TextDecoder().decode(pt));
+  } catch { return null; }
+}
+function setConfigSaved(hasCred) {
+  document.querySelector('.config-bar').style.display = hasCred ? 'none' : '';
+  document.getElementById('cfgSaveBtn').style.display = hasCred ? 'none' : '';
+}
+function applyConfig(cfg) {
+  window._distilleryEnv = cfg;
+  if (cfg.N8N_WEBHOOK_URL) document.getElementById('n8nUrl').value    = cfg.N8N_WEBHOOK_URL;
+  if (cfg.N8N_AUTH)        document.getElementById('n8nAuth').value   = cfg.N8N_AUTH;
+  if (cfg.CHUNK_SIZE)      document.getElementById('chunkSize').value = cfg.CHUNK_SIZE;
+  if (cfg.BATCH_SIZE)      document.getElementById('batchSize').value = cfg.BATCH_SIZE;
+  setConfigSaved(!!cfg.N8N_WEBHOOK_URL);
+}
+async function saveConfig() {
+  const cfg = {
+    N8N_WEBHOOK_URL : document.getElementById('n8nUrl').value.trim(),
+    N8N_AUTH        : document.getElementById('n8nAuth').value.trim(),
+    CHUNK_SIZE      : document.getElementById('chunkSize').value,
+    BATCH_SIZE      : document.getElementById('batchSize').value,
+  };
+  localStorage.setItem(CFG_KEY, await encryptObj(cfg));
+  window._distilleryEnv = cfg;
+  const note = document.getElementById('cfgSavedNote');
+  note.classList.add('show');
+  setTimeout(() => note.classList.remove('show'), 2500);
+  setConfigSaved(!!cfg.N8N_WEBHOOK_URL);
+}
+async function clearConfig() {
+  localStorage.removeItem(CFG_KEY);
+  window._distilleryEnv = {};
+  setConfigSaved(false);
+}
+(async function() {
+  try {
+    const stored = localStorage.getItem(CFG_KEY);
+    if (!stored) return;
+    const cfg = await decryptObj(stored);
+    if (cfg) applyConfig(cfg);
+  } catch(e) { console.warn('[Distillery] config load failed:', e); }
 })();
 // ─────────────────────────────────────────────────────────────────────────────
 

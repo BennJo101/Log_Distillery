@@ -168,29 +168,12 @@ body::after {
 .still-opt.active-claude .opt-desc { color: var(--copper2); }
 .still-opt.active-n8n    .opt-desc { color: var(--copper2); }
 
-.still-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 10px;
-  min-width: 32px;
-  background: var(--oak);
-  border-right: 1px solid var(--plank);
-  z-index: 1;
-  overflow: hidden;
-}
-.still-divider-label {
-  font-family: 'Special Elite', serif;
-  font-size: 9px;
-  color: var(--ink4);
-  letter-spacing: .2em;
-  text-transform: uppercase;
-}
+.still-divider { display: none; }
 
 /* ── CONFIG FIELDS ────────────────────────────────── */
-.config-bar { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 20px; }
-.config-field { display: flex; flex-direction: column; gap: 5px; }
-.config-field label { font-family: 'Special Elite', serif; font-size: 10px; color: var(--ink4); letter-spacing: .15em; text-transform: uppercase; }
+.config-bar { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; justify-content: center; margin-bottom: 16px; }
+.config-field { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.config-field label { font-family: 'Special Elite', serif; font-size: 10px; color: var(--ink4); letter-spacing: .15em; text-transform: uppercase; text-align: center; }
 .config-field input,
 .config-field select {
   background: var(--oak2);
@@ -211,6 +194,51 @@ body::after {
 .config-field input[type=password],
 .config-field input[type=text]   { width: 270px; }
 .config-field input[type=password] { letter-spacing: .1em; }
+
+/* Config save / forget */
+.cfg-actions {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 28px;
+}
+.cfg-save-btn, .cfg-clear-btn {
+  width: 140px; text-align: center;
+  background: transparent;
+  font-family: 'Special Elite', serif; font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  padding: 7px 0; cursor: pointer; white-space: nowrap;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.cfg-save-btn {
+  border: 1px solid var(--copper2);
+  border-radius: var(--r) 0 0 var(--r);
+  color: var(--copper2);
+}
+.cfg-save-btn:hover { background: var(--copper2); color: var(--oak); }
+.cfg-clear-btn {
+  border: 1px solid var(--grain);
+  border-left: none;
+  border-radius: 0 var(--r) var(--r) 0;
+  color: var(--ink4);
+}
+.cfg-clear-btn:hover { border-color: #9b4040; color: #9b4040; }
+/* When Save is hidden, restore Forget's left border and full radius */
+.cfg-actions.cfg-saved .cfg-clear-btn {
+  border-left: 1px solid var(--grain);
+  border-radius: var(--r);
+}
+.cfg-actions.cfg-saved .cfg-clear-btn:hover { border-color: #9b4040; }
+.cfg-saved-note {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%; transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: 'Crimson Pro', Georgia, serif; font-style: italic; font-size: 13px; color: var(--copper2);
+  opacity: 0; transition: opacity .4s; pointer-events: none;
+}
+.cfg-saved-note.show { opacity: 1; }
 
 /* Mode-specific credential panels */
 .cred-panel { display: none; }
@@ -582,6 +610,12 @@ body.mode-n8n .distill-btn {
           <input type="number" id="batchSize" value="6" min="2" max="20">
         </div>
 
+      </div>
+
+      <div class="cfg-actions" id="cfgActions">
+        <button class="cfg-save-btn" id="cfgSaveBtn" onclick="saveConfig()">Save Config</button>
+        <button class="cfg-clear-btn" onclick="clearConfig()">Forget</button>
+        <span class="cfg-saved-note" id="cfgSavedNote">Config saved.</span>
       </div>
 
       <!-- DROP ZONE -->
@@ -991,19 +1025,13 @@ async function runDistill() {
   const chunkSize = Math.max(5, parseInt(document.getElementById('chunkSize').value) || 30);
   const batchSize = Math.max(2, parseInt(document.getElementById('batchSize').value) || 6);
 
-  // Build mode config — prefer window._distilleryEnv (set by .env loader)
-  // over live input values, which the browser password manager may have wiped
   const _env = window._distilleryEnv || {};
   let cfg;
   if (currentMode === 'claude') {
     const apiKey = _env.ANTHROPIC_API_KEY || document.getElementById('apiKey').value.trim();
-    const selEl  = document.getElementById('modelSel');
-    let model    = selEl.value;
-    if (_env.MODEL) {
-      const match = [...selEl.options].find(o => o.value === _env.MODEL)
-                 || [...selEl.options].find(o => o.value.startsWith(_env.MODEL));
-      if (match) model = match.value;
-    }
+    const selEl = document.getElementById('modelSel');
+    let model = selEl.value;
+    if (_env.MODEL) { const m = [...selEl.options].find(o => o.value === _env.MODEL) || [...selEl.options].find(o => o.value.startsWith(_env.MODEL)); if (m) model = m.value; }
     if (!apiKey) { showError('Provide your Anthropic API key to fire the still.'); return; }
     cfg = { mode: 'claude', apiKey, model };
   } else {
@@ -1196,82 +1224,57 @@ async function generateAftercares(cfg, finalSummary) {
   }
 }
 
-// ── .env auto-loader ─────────────────────────────────────────────────────────
-// Tries 'distillery.env' then '.env'. Uses XHR fallback for file:// contexts.
-// Parsed values live in window._distilleryEnv so runDistill reads from there
-// directly — avoids the browser password-manager wiping #apiKey after load.
-(async function loadDotEnv() {
-  const candidates = ['distillery.env', '.env'];
-
-  function xhrGet(url) {
-    return new Promise((resolve) => {
-      const x = new XMLHttpRequest();
-      x.open('GET', url, true);
-      x.onload  = () => (x.status === 200 ? resolve(x.responseText) : resolve(null));
-      x.onerror = () => resolve(null);
-      x.send();
-    });
-  }
-
-  let text = null;
-  for (const name of candidates) {
-    try {
-      const res = await fetch(name);
-      if (res.ok) { text = await res.text(); break; }
-    } catch { /* fetch blocked on file:// — fall through to XHR */ }
-    if (text === null) {
-      const t = await xhrGet(name);
-      if (t !== null) { text = t; break; }
-    }
-  }
-  if (!text) return;   // no config file found — show config bar normally
-
-  const env = {};
-  for (const raw of text.split('\n')) {
-    const line = raw.trim();
-    if (!line || line.startsWith('#')) continue;
-    const eq = line.indexOf('=');
-    if (eq < 1) continue;
-    const k = line.slice(0, eq).trim();
-    const v = line.slice(eq + 1).trim().replace(/^["']|["']$/g, '');
-    env[k] = v;
-  }
-
-  // Store for runDistill — more reliable than reading back from inputs
-  window._distilleryEnv = env;
-
-  let populated = false;
-
-  // Populate inputs as visual hints (may be wiped by password manager — that's OK)
-  if (env.ANTHROPIC_API_KEY) {
-    document.getElementById('apiKey').value = env.ANTHROPIC_API_KEY;
-    populated = true;
-  }
-  if (env.MODEL) {
-    const sel = document.getElementById('modelSel');
-    const opt = [...sel.options].find(o => o.value === env.MODEL)
-             || [...sel.options].find(o => o.value.startsWith(env.MODEL));
-    if (opt) { sel.value = opt.value; }
-  }
-  if (env.N8N_WEBHOOK_URL) {
-    document.getElementById('n8nUrl').value = env.N8N_WEBHOOK_URL;
-    populated = true;
-  }
-  if (env.N8N_AUTH) {
-    document.getElementById('n8nAuth').value = env.N8N_AUTH;
-  }
-  if (env.CHUNK_SIZE) {
-    document.getElementById('chunkSize').value = env.CHUNK_SIZE;
-  }
-  if (env.BATCH_SIZE) {
-    document.getElementById('batchSize').value = env.BATCH_SIZE;
-  }
-
-  if (populated) {
-    const bar = document.querySelector('.config-bar');
-    if (bar) bar.style.display = 'none';
-  }
-})();
+// ── Secure config (AES-GCM via Web Crypto) ───────────────────────────────────
+const CFG_KEY = 'distilleryCfg_v1';
+async function getCryptoKey() {
+  const fp = [navigator.userAgent, screen.width, screen.height, Intl.DateTimeFormat().resolvedOptions().timeZone].join('|');
+  const enc = new TextEncoder();
+  const raw = await crypto.subtle.importKey('raw', enc.encode(fp), { name: 'PBKDF2' }, false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: enc.encode('distillery-salt-v1'), iterations: 100_000, hash: 'SHA-256' },
+    raw, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function encryptObj(obj) {
+  const key = await getCryptoKey(), iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(obj)));
+  const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  return b64(iv) + ':' + b64(ct);
+}
+async function decryptObj(stored) {
+  try {
+    const key = await getCryptoKey(), [ivB64, ctB64] = stored.split(':');
+    const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64d(ivB64) }, key, b64d(ctB64));
+    return JSON.parse(new TextDecoder().decode(pt));
+  } catch { return null; }
+}
+function setConfigSaved(hasCred) {
+  document.querySelector('.config-bar').style.display = hasCred ? 'none' : '';
+  document.getElementById('cfgSaveBtn').style.display = hasCred ? 'none' : '';
+  // Toggle class so CSS can restore Forget's left border when it stands alone
+  document.getElementById('cfgActions').classList.toggle('cfg-saved', hasCred);
+}
+function applyConfig(cfg) {
+  window._distilleryEnv = cfg;
+  if (cfg.ANTHROPIC_API_KEY) document.getElementById('apiKey').value    = cfg.ANTHROPIC_API_KEY;
+  if (cfg.MODEL) { const sel = document.getElementById('modelSel'); const opt = [...sel.options].find(o => o.value === cfg.MODEL) || [...sel.options].find(o => o.value.startsWith(cfg.MODEL)); if (opt) sel.value = opt.value; }
+  if (cfg.N8N_WEBHOOK_URL) document.getElementById('n8nUrl').value    = cfg.N8N_WEBHOOK_URL;
+  if (cfg.N8N_AUTH)        document.getElementById('n8nAuth').value   = cfg.N8N_AUTH;
+  if (cfg.CHUNK_SIZE)      document.getElementById('chunkSize').value = cfg.CHUNK_SIZE;
+  if (cfg.BATCH_SIZE)      document.getElementById('batchSize').value = cfg.BATCH_SIZE;
+  setConfigSaved(!!(cfg.ANTHROPIC_API_KEY || cfg.N8N_WEBHOOK_URL));
+}
+async function saveConfig() {
+  const cfg = { ANTHROPIC_API_KEY: document.getElementById('apiKey').value.trim(), MODEL: document.getElementById('modelSel').value,
+    N8N_WEBHOOK_URL: document.getElementById('n8nUrl').value.trim(), N8N_AUTH: document.getElementById('n8nAuth').value.trim(),
+    CHUNK_SIZE: document.getElementById('chunkSize').value, BATCH_SIZE: document.getElementById('batchSize').value };
+  localStorage.setItem(CFG_KEY, await encryptObj(cfg));
+  window._distilleryEnv = cfg;
+  const note = document.getElementById('cfgSavedNote');
+  note.classList.add('show'); setTimeout(() => note.classList.remove('show'), 2500);
+  setConfigSaved(!!(cfg.ANTHROPIC_API_KEY || cfg.N8N_WEBHOOK_URL));
+}
+async function clearConfig() { localStorage.removeItem(CFG_KEY); window._distilleryEnv = {}; setConfigSaved(false); }
+(async function() { try { const s = localStorage.getItem(CFG_KEY); if (s) { const c = await decryptObj(s); if (c) applyConfig(c); } } catch(e) {} })();
 // ─────────────────────────────────────────────────────────────────────────────
 
 function renderAftercareBullets(text) {
