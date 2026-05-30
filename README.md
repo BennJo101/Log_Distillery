@@ -12,7 +12,6 @@ Log Distillery takes a raw log file of any size, chunks it into numbered barrels
 |------|-------------|
 | `log_distillery.html` | Full version — choose between **Claude Direct** (Anthropic API) or **N8N Webhook** at runtime via the toggle |
 | `log_distillery_n8n.html` | N8N-only version — streamlined, no API key UI, all AI calls route through your N8N webhook |
-| `.env` *(optional)* | Drop alongside the HTML to auto-populate credentials and hide the config bar on load |
 
 Both HTML files are single self-contained files. No build step, no dependencies, no server required. Open in any modern browser.
 
@@ -50,23 +49,21 @@ Aftercare ── Four AI-generated recommendation panels fire automatically
 ### `log_distillery.html` (Dual Mode)
 
 1. Open `log_distillery.html` in your browser
-2. Select your still using the **Claude Direct / OR / N8N Webhook** toggle:
+2. Select your still using the **Claude Direct / N8N Webhook** toggle:
    - **Claude Direct** — enter your Anthropic API key and choose a model
    - **N8N Webhook** — enter your N8N webhook URL and optional auth header
-3. Drop a log file onto the drop zone, browse for one, or paste directly
-4. Adjust **Mash Bill** (lines per chunk) and **Barrel Batch Size** if needed
-5. Click **Fire the Still**
-
-> **Tip:** Place a `.env` file in the same directory as the HTML to skip step 2 entirely — credentials are loaded automatically and the config bar is hidden. See [`.env` Auto-Configuration](#env-auto-configuration) below.
+3. Click **Save Config** to encrypt and store your credentials locally — they will auto-load on every subsequent open
+4. Drop a log file onto the drop zone, browse for one, or paste directly
+5. Adjust **Mash Bill** (lines per chunk) and **Barrel Batch Size** if needed
+6. Click **Fire the Still**
 
 ### `log_distillery_n8n.html` (N8N Only)
 
 1. Open `log_distillery_n8n.html` in your browser
 2. Enter your N8N Webhook URL and optional auth header
-3. Drop, browse, or paste your log
-4. Click **Fire the Still**
-
-> **Tip:** Same `.env` support applies — drop one alongside the HTML to pre-load your webhook URL and hide the config UI.
+3. Click **Save Config** to store credentials — they will auto-load next time
+4. Drop, browse, or paste your log
+5. Click **Fire the Still**
 
 ---
 
@@ -88,57 +85,22 @@ Aftercare ── Four AI-generated recommendation panels fire automatically
 
 ---
 
-## `.env` Auto-Configuration
+## Saved Config
 
-Both HTML files support an optional `.env` file for pre-loading credentials. When the page loads, it looks for a `.env` in the same directory. If found, it parses the file, populates the config fields silently, and hides the entire config bar so the UI is clean and ready to use without any manual entry. If no `.env` is present, the config bar displays as normal — no change in behavior.
+Both HTML files remember your credentials between sessions using AES-256-GCM encryption via the browser's built-in Web Crypto API. Nothing is stored in plain text.
 
-### Supported keys
+### How it works
 
-**`log_distillery.html` (dual-mode)**
+Enter your credentials, then click **Save Config**. The values are encrypted using a key derived from your browser profile (user agent, screen dimensions, timezone) and stored in `localStorage`. On every subsequent open, the saved config is decrypted silently and the config bar is hidden — the tool is ready to use immediately.
 
-```env
-ANTHROPIC_API_KEY=sk-ant-api03-...
-MODEL=claude-sonnet-4-20250514
-N8N_WEBHOOK_URL=https://your-n8n.com/webhook/log-distillery
-N8N_AUTH=Bearer your-token-here
-CHUNK_SIZE=30
-BATCH_SIZE=6
-```
+Click **Forget** at any time to wipe the saved config and restore the config bar.
 
-**`log_distillery_n8n.html` (N8N only)**
+### Security notes
 
-```env
-N8N_WEBHOOK_URL=https://your-n8n.com/webhook/log-distillery
-N8N_AUTH=Bearer your-token-here
-CHUNK_SIZE=30
-BATCH_SIZE=6
-```
-
-### Behavior
-
-- The config bar is hidden only when at least one **credential key** is present (`ANTHROPIC_API_KEY` or `N8N_WEBHOOK_URL`). Numeric-only keys like `CHUNK_SIZE` apply silently but do not trigger the hide.
-- `MODEL` accepts a full model string (`claude-sonnet-4-20250514`) or a prefix (`claude-sonnet`) — the closest match in the dropdown is selected.
-- Quoted values are supported: `KEY="value"` and `KEY='value'` are both parsed correctly.
-- Lines beginning with `#` are treated as comments and ignored.
-- The `.env` file is never transmitted anywhere — it is read locally by the browser and discarded after populating the fields.
-
-### Serving the files
-
-Browsers block `fetch()` on `file://` URLs, so the `.env` loader requires the files to be served over HTTP. Any static server works:
-
-```bash
-# Python (built-in)
-python3 -m http.server 8080
-
-# Node.js (npx, no install)
-npx serve .
-
-# VS Code Live Server extension — right-click the HTML file → Open with Live Server
-```
-
-Then open `http://localhost:8080/log_distillery.html` (or whichever port). Place `.env` in the same directory as the HTML file.
-
-> **CMMC / GovCloud note:** When running Log Distillery inside a secured environment (e.g., served from an internal web server or a local Docker container), the `.env` approach keeps credentials out of browser history and out of the HTML source while still being loaded at runtime. For shared or multi-user deployments, protect the `.env` file with appropriate filesystem permissions or serve it only over an authenticated internal endpoint.
+- Credentials are encrypted before storage — not readable as plain text in browser DevTools or the localStorage inspector
+- The encryption key is tied to your specific browser profile; the stored data is meaningless on any other machine or browser
+- No credentials are ever transmitted anywhere other than the API endpoint (Anthropic or your N8N instance)
+- For shared or kiosk machines, click **Forget** when done
 
 ---
 
@@ -154,7 +116,7 @@ Calls the Anthropic API directly from your browser. No proxy or server required.
 | `claude-haiku-4-5` | Fastest | Good | Large logs, cost-sensitive |
 | `claude-opus-4-6` | Slow | Highest | Complex logs needing deep analysis |
 
-Your API key is never stored — it lives only in the input field for the duration of the session.
+Your API key is encrypted and stored locally via **Save Config** — it is never transmitted anywhere other than `api.anthropic.com`.
 
 ---
 
@@ -336,6 +298,7 @@ In N8N mode, aftercare calls arrive at your webhook with `"round": "aftercare"` 
 | Element | Function |
 |---------|----------|
 | Still selector | Toggle between Claude Direct and N8N Webhook (dual-mode version only) |
+| Save Config / Forget | Encrypt and persist credentials to localStorage, or wipe them |
 | Drop zone | Drag & drop a file, browse, or paste log text directly |
 | Stats bar | Live estimate of line count, barrel count, and distillation rounds |
 | Round cards | Each distillation round rendered with collapsible barrel tiles |
