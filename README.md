@@ -227,7 +227,7 @@ N8N will be available at `http://your-server:5678`. The first time you open it y
 docker compose pull && docker compose up -d
 ```
 
-> **Tip for RheinMan / GovCloud:** Deploy inside your existing AWS GovCloud or Azure Government VNet. Set `WEBHOOK_URL` to your internal hostname so the Log Distillery can reach it from within the boundary without any traffic leaving the perimeter.
+> **Tip for GovCloud:** Deploy inside your existing AWS GovCloud or Azure Government VNet. Set `WEBHOOK_URL` to your internal hostname so the Log Distillery can reach it from within the boundary without any traffic leaving the perimeter.
 
 ---
 
