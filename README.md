@@ -10,10 +10,9 @@ Log Distillery takes a raw log file of any size, chunks it into numbered barrels
 
 | File | Description |
 |------|-------------|
-| `log_distillery.html` | Full version — choose between **Claude Direct** (Anthropic API) or **N8N Webhook** at runtime via the toggle |
-| `log_distillery_n8n.html` | N8N-only version — streamlined, no API key UI, all AI calls route through your N8N webhook |
+| `log_distillery.html` | Single self-contained file — choose between **Claude Direct** (Anthropic API) or **N8N Webhook** at runtime via the toggle |
 
-Both HTML files are single self-contained files. No build step, no dependencies, no server required. Open in any modern browser.
+No build step, no dependencies, no server required. Open in any modern browser.
 
 ---
 
@@ -46,8 +45,6 @@ Aftercare ── Four AI-generated recommendation panels fire automatically
 
 ## Quick Start
 
-### `log_distillery.html` (Dual Mode)
-
 1. Open `log_distillery.html` in your browser
 2. Select your still using the **Claude Direct / N8N Webhook** toggle:
    - **Claude Direct** — enter your Anthropic API key and choose a model
@@ -55,15 +52,20 @@ Aftercare ── Four AI-generated recommendation panels fire automatically
 3. Click **Save Config** to encrypt and store your credentials locally — they will auto-load on every subsequent open
 4. Drop a log file onto the drop zone, browse for one, or paste directly
 5. Adjust **Mash Bill** (lines per chunk) and **Barrel Batch Size** if needed
-6. Click **Fire the Still**
+6. *(Optional)* Enter a focus in the **"What should the still be looking for?"** field to steer the AI toward specific events, errors, or patterns
+7. Click **Fire the Still**
 
-### `log_distillery_n8n.html` (N8N Only)
+---
 
-1. Open `log_distillery_n8n.html` in your browser
-2. Enter your N8N Webhook URL and optional auth header
-3. Click **Save Config** to store credentials — they will auto-load next time
-4. Drop, browse, or paste your log
-5. Click **Fire the Still**
+## Focus Field
+
+Before firing, you can type a plain-language directive in the **"What should the still be looking for?"** field:
+
+> *e.g. authentication failures after the 3am deploy, slow queries over 500ms, 5xx errors from the payment service*
+
+When provided, this is injected directly into every AI prompt — both the per-barrel summaries and each consolidation pass — as an explicit instruction. The **Distillation Plan** summary above the button will reflect your focus and preview the barrel breakdown before you fire.
+
+Leave it blank and the distillation runs with no directed focus, surfacing whatever the AI judges most significant.
 
 ---
 
@@ -87,7 +89,7 @@ Aftercare ── Four AI-generated recommendation panels fire automatically
 
 ## Saved Config
 
-Both HTML files remember your credentials between sessions using AES-256-GCM encryption via the browser's built-in Web Crypto API. Nothing is stored in plain text.
+Log Distillery remembers your credentials between sessions using AES-256-GCM encryption via the browser's built-in Web Crypto API. Nothing is stored in plain text.
 
 ### How it works
 
@@ -297,10 +299,12 @@ In N8N mode, aftercare calls arrive at your webhook with `"round": "aftercare"` 
 
 | Element | Function |
 |---------|----------|
-| Still selector | Toggle between Claude Direct and N8N Webhook (dual-mode version only) |
+| Still selector | Toggle between Claude Direct and N8N Webhook |
 | Save Config / Forget | Encrypt and persist credentials to localStorage, or wipe them |
 | Drop zone | Drag & drop a file, browse, or paste log text directly |
 | Stats bar | Live estimate of line count, barrel count, and distillation rounds |
+| Focus field | Plain-language directive injected into every AI prompt |
+| Distillation Plan | Live preview of detected log type, barrel breakdown, and your focus |
 | Round cards | Each distillation round rendered with collapsible barrel tiles |
 | Barrel tiles | Click any tile to open the full summary text in the detail drawer |
 | Progress bar | Copper fill tracks pipeline completion |
